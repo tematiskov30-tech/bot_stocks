@@ -11,6 +11,9 @@ from collections import defaultdict
 
 # УКАЖИТЕ ВАШ ТОКЕН ЗДЕСЬ!
 TOKEN = "8212022181:AAHIRzJzO_ueE-fsOalmVBKkKNFTjKJWimM"  # ⬅️ ЗАМЕНИТЕ НА СВОЙ!
+# ==================== КОНСТАНТЫ ДЛЯ НАСТОЕК ====================
+TINCTURE_MIN_QUANTITY = 2.5  # Минимум для настоек
+TINCTURE_DAYS_TO_PREPARE = 14  # Дней на настаивание
 
 # Проверка токена
 if not TOKEN or TOKEN.startswith("6123456789"):
@@ -117,13 +120,13 @@ def init_database():
         ('Сироп Вишневый', 2, 'вишня, вишневый, сироп вишня'),
         ('Кордиал Эрл-грей', 2, 'эрл грей, эрл-грей'),
         ('Кордиал Морковь', 2, 'морковь'),
+        ('Кордиал Улун', 2, 'кордиал улун'),
         ('Водка на базилике', 2, 'базилик, водка базилик'),
-        ('Сахарный сироп', 5, 'сахар, симпл'),
-        ('Фреш', 5, 'фреш, лимон сок, цитрус'),
+        ('Сахарный сироп', 3, 'сахар, симпл'),
+        ('Фреш', 3, 'фреш, лимон сок, цитрус'),
         ('Соус Манго-чили', 0.5, 'чили, манго чили'),
         ('Клубничный шраб', 2, 'клубника, клубничный'),
         ('Грушевый шраб', 2, 'грушевый'),
-        ('Ром на барбарисе', 2, 'ром барбарис, барбарис'),
         ('Ликер Шоколад-кунжут', 2, 'шоколад кунжут, кунжут, шоколад, ликер'),
         ('Джин на белом грибе', 2, 'гриб, джин белый, белый гриб'),
         ('Мэри Микс', 2, 'микс, мэри, мери микс'),
@@ -138,7 +141,33 @@ def init_database():
     
     # Добавляем базовые шаблоны для настоек
     tincture_templates = [
-        ('Настойка', 3, 'настойка, настой, настоянка'),
+        ('Темный ром на изюме', TINCTURE_MIN_QUANTITY, 'ром изюм, темный ром изюм, ром на изюме'),
+        ('Виски на финиках', TINCTURE_MIN_QUANTITY, 'виски финики, финики виски, виски на финиках'),
+        ('Виски на вишне', TINCTURE_MIN_QUANTITY, 'виски вишня, вишня виски, виски на вишне'),
+        ('Белый ром на банане и эрл грее', TINCTURE_MIN_QUANTITY, 'белый ром банан, ром банан, ром эрл грей, банан эрл грей'),
+        ('Темный ром на кунжуте и какао-бобах', TINCTURE_MIN_QUANTITY, 'ром кунжут, ром какао, темный ром кунжут, какао бобы'),
+        ('Виски на печеных яблоках и специях', TINCTURE_MIN_QUANTITY, 'виски яблоки, печеные яблоки, виски специи, яблоки специи'),
+        ('Виски на кураге и цедре апельсина', TINCTURE_MIN_QUANTITY, 'виски курага, курага апельсин, цедра апельсина, виски апельсин'),
+        ('Виски на маке и яблоках', TINCTURE_MIN_QUANTITY, 'виски мак, мак яблоки, виски мак яблоки'),
+        ('Джин на малине и тимьяне', TINCTURE_MIN_QUANTITY, 'джин малина, малина тимьян, джин тимьян'),
+        ('Джин на облепихе и молочном улуне', TINCTURE_MIN_QUANTITY, 'джин облепиха, облепиха улун, молочный улун'),
+        ('Водка на мандарине', TINCTURE_MIN_QUANTITY, 'водка мандарин, мандарин водка'),
+        ('Джин на клюкве', TINCTURE_MIN_QUANTITY, 'джин клюква, клюква джин'),
+        ('Джин на груше и цедре лайма', TINCTURE_MIN_QUANTITY, 'джин груша, груша лайм, цедра лайма'),
+        ('Виски на бруснике', TINCTURE_MIN_QUANTITY, 'виски брусника, брусника виски'),
+        ('Овсяная лимончелло', TINCTURE_MIN_QUANTITY, 'овсяная лимончелло, лимончелло, овсяная, овсянка лимончелло'),
+        ('Водка на апельсине и йогурте', TINCTURE_MIN_QUANTITY, 'водка апельсин йогурт, апельсин йогурт'),
+        ('Водка на гречке и чили', TINCTURE_MIN_QUANTITY, 'водка гречка чили, гречка чили'),
+        ('Водка на свекле и халапеньо', TINCTURE_MIN_QUANTITY, 'водка свекла халапеньо, свекла халапеньо'),
+        ('Водка на грейпфруте и гибискусе', TINCTURE_MIN_QUANTITY, 'водка грейпфрут гибискус, грейпфрут гибискус'),
+        ('Водка на рукколе и томатах', TINCTURE_MIN_QUANTITY, 'водка руккола томаты, руккола томаты'),
+        ('Водка на болгарском и чили перцах', TINCTURE_MIN_QUANTITY, 'водка болгарский перец, болгарский перец чили, перцы водка'),
+        ('Виски на черносливе', TINCTURE_MIN_QUANTITY, 'виски чернослив, чернослив виски'),
+
+
+
+
+        
     ]
     
     cursor.executemany('''
@@ -154,6 +183,15 @@ def init_database():
 init_database()
 
 # ==================== ФУНКЦИИ ДЛЯ ШАБЛОНОВ ====================
+def format_float(value):
+    """Форматирует float значение до 3 знаков после запятой"""
+    if value is None:
+        return "0.000"
+    try:
+        # Округляем до 3 знаков после запятой
+        return f"{float(value):.3f}".rstrip('0').rstrip('.') if '.' in f"{float(value):.3f}" else f"{float(value):.3f}"
+    except (ValueError, TypeError):
+        return str(value)
 
 def find_template_for_product(product_name: str, category: str):
     """
@@ -258,7 +296,7 @@ def add_product(product_name, amount, category='Заготовки'):
         else:
             # Шаблон не найден - используем введенные данные
             final_name = product_name.title()
-            min_quantity = 5 if category == 'Заготовки' else 3
+            min_quantity = 1 if category == 'Заготовки' else 3
             used_template = False
         
         # 3. Ищем существующий продукт
@@ -391,7 +429,7 @@ def parse_batch_input(text):
     return products
 
 def remove_product(product_name, amount, category='Заготовки'):
-    """Списывает продукт"""
+    """Списывает продукт с поиском по ключевым словам"""
     conn = sqlite3.connect('stock.db')
     cursor = conn.cursor()
     
@@ -399,29 +437,57 @@ def remove_product(product_name, amount, category='Заготовки'):
         # Определяем таблицу
         table_name = 'preparations' if category == 'Заготовки' else 'tinctures'
         
-        # Ищем продукт
+        # Ищем по точному имени
         cursor.execute(
-            f"SELECT id, current_quantity FROM {table_name} WHERE LOWER(name)=LOWER(?)",
+            f"SELECT id, current_quantity, name FROM {table_name} WHERE LOWER(name)=LOWER(?)",
             (product_name,)
         )
         result = cursor.fetchone()
         
+        # Если не нашли по точному имени, ищем по ключевым словам
         if not result:
-            # Пробуем найти в другой таблице
-            other_table = 'tinctures' if category == 'Заготовки' else 'preparations'
-            cursor.execute(
-                f"SELECT id, current_quantity FROM {other_table} WHERE LOWER(name)=LOWER(?)",
-                (product_name,)
-            )
-            result = cursor.fetchone()
-            if result:
-                return False, f"Продукт найден в категории '{'Настойки' if category == 'Заготовки' else 'Заготовки'}'"
-            return False, "Такого продукта нет!"
+            # Пробуем найти через шаблоны
+            template = find_template_for_product(product_name, category)
+            
+            if template:
+                # Ищем продукт с полным именем из шаблона
+                cursor.execute(
+                    f"SELECT id, current_quantity, name FROM {table_name} WHERE LOWER(name)=LOWER(?)",
+                    (template['full_name'],)
+                )
+                result = cursor.fetchone()
+                
+                if result:
+                    product_id, current, full_name = result
+                    print(f"Найден по шаблону: {product_name} -> {full_name}")
+                else:
+                    # Пробуем найти в другой категории
+                    other_table = 'tinctures' if category == 'Заготовки' else 'preparations'
+                    cursor.execute(
+                        f"SELECT id, current_quantity, name FROM {other_table} WHERE LOWER(name)=LOWER(?)",
+                        (template['full_name'],)
+                    )
+                    result = cursor.fetchone()
+                    
+                    if result:
+                        return False, f"Продукт найден в категории '{'Настойки' if category == 'Заготовки' else 'Заготовки'}'"
+                    
+                    return False, "Такого продукта нет!"
+            else:
+                # Пробуем частичное совпадение (если введена часть названия)
+                cursor.execute(
+                    f"SELECT id, current_quantity, name FROM {table_name} WHERE LOWER(name) LIKE LOWER(?)",
+                    (f"%{product_name}%",)
+                )
+                result = cursor.fetchone()
+                
+                if not result:
+                    return False, "Такого продукта нет!"
         
-        product_id, current = result
+        product_id, current, full_name = result
         
         if current < amount:
-            return False, f"Слишком много! Есть только {current}"
+            return False, f"Слишком много! Есть только {format_float(current)} л"
         
         new_quantity = current - amount
         cursor.execute(
@@ -429,10 +495,10 @@ def remove_product(product_name, amount, category='Заготовки'):
             (new_quantity, product_id)
         )
         
-        # Добавляем в историю
+        # Добавляем в историю с полным именем
         cursor.execute(
             "INSERT INTO history (product_name, category, operation, amount) VALUES (?, ?, 'remove', ?)",
-            (product_name.title(), category, amount)
+            (full_name, category, amount)
         )
         
         conn.commit()
@@ -457,6 +523,8 @@ def batch_remove_products(product_list, category='Заготовки'):
             if not product_name or amount <= 0:
                 continue
             
+            print(f"Пытаемся списать: {product_name} ({amount}) из {category}")
+            
             success, result_msg = remove_product(product_name, amount, category)
             
             if success:
@@ -465,12 +533,17 @@ def batch_remove_products(product_list, category='Заготовки'):
                     'amount': amount,
                     'remaining': result_msg
                 })
+                print(f"Успешно: {product_name}")
             else:
                 errors.append(f"{product_name}: {result_msg}")
+                print(f"Ошибка: {product_name} - {result_msg}")
                 
         except Exception as e:
-            errors.append(f"{product_data.get('name', '?')}: {str(e)}")
+            error_msg = f"{product_data.get('name', '?')}: {str(e)}"
+            errors.append(error_msg)
+            print(f"Исключение: {error_msg}")
     
+    print(f"Итог списания: {len(results)} успешно, {len(errors)} ошибок")
     return results, errors
 
 def get_all_products():
@@ -502,7 +575,8 @@ def get_low_stock_sorted():
     
     # Получаем настойки с низким остатком
     cursor.execute(
-        "SELECT name, current_quantity, min_quantity, 'Настойки' as category FROM tinctures WHERE current_quantity <= min_quantity"
+        "SELECT name, current_quantity, ?, 'Настойки' as category FROM tinctures WHERE current_quantity <= ?",
+        (TINCTURE_MIN_QUANTITY, TINCTURE_MIN_QUANTITY)
     )
     low_tinctures = cursor.fetchall()
     
@@ -581,7 +655,7 @@ def clear_selected_product(product_name, category):
         )
         
         conn.commit()
-        return True, f"Выпито: {product_name} ({quantity} л)"
+        return True, f"Выпито: {product_name} ({format_float(quantity)} л)"
         
     except Exception as e:
         return False, f"❌ Ошибка: {str(e)}"
@@ -671,7 +745,7 @@ async def enter_products_add(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 success_count = len(results)
                 
                 if success_count > 0:
-                    message = f"✅"
+                    return ENTER_PRODUCTS_ADD
                     
                     await update.message.reply_text(
                         message,
@@ -699,7 +773,7 @@ async def enter_products_add(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 result = add_product(product_data['name'], product_data['amount'], category)
                 
                 if result['success']:
-                    message = f"✅"
+                    return ENTER_PRODUCTS_ADD
     
                     
                     await update.message.reply_text(
@@ -809,7 +883,7 @@ async def enter_products_remove(update: Update, context: ContextTypes.DEFAULT_TY
                 success_count = len(results)
                 
                 if success_count > 0:
-                    message = f"✅"
+                    return ENTER_PRODUCTS_REMOVE
                     
                     if errors:
                         message += f"\n❌ *Ошибки ({len(errors)}):*\n"
@@ -842,7 +916,7 @@ async def enter_products_remove(update: Update, context: ContextTypes.DEFAULT_TY
                 success, result_msg = remove_product(product_data['name'], product_data['amount'], category)
                 
                 if success:
-                    message = f"✅"
+                    return ENTER_PRODUCTS_REMOVE
                     
                     await update.message.reply_text(
                         message,
@@ -933,13 +1007,13 @@ async def clear_select(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if preparations:
             message += "🥫 *ЗАГОТОВКИ:*\n"
             for i, (name, qty, min_qty, _) in enumerate(preparations, 1):
-                message += f"{i}. {name} ({qty} л)\n"
+                message += f"{i}. {name} ({format_float(qty)} л)\n"
             message += "\n"
         
         if tinctures:
             message += "🍶 *НАСТОЙКИ:*\n"
             for i, (name, qty, min_qty, _) in enumerate(tinctures, len(preparations) + 1):
-                message += f"{i}. {name} ({qty} л)\n"
+                message += f"{i}. {name} ({format_float(qty)} л)\n"
         
         message += "\nВведи номер продукта или его название:"
         
@@ -1050,15 +1124,14 @@ async def total_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         message1 += "*ЗАГОТОВКИ:*\n"
         for name, qty, min_qty, _ in preparations:
             status = "⚠️" if qty <= min_qty else "✅"
-            message1 += f"{status} *{name}*  {qty} л\n"
+            message1 += f"{status} *{name}*  {format_float(qty)} л\n"
     
     if tinctures:
-        message1 += "*НАСТОЙКИ:*\n"
+        message1 += "\n*НАСТОЙКИ:*\n"
         for name, qty, min_qty, _ in tinctures:
-            status = "⚠️" if qty <= min_qty else "✅"
-            message1 += f"{status} *{name}* {qty} л\n"
-    
-
+            # Для настоек используем особый минимум
+            status = "⚠️" if qty <= TINCTURE_MIN_QUANTITY else "✅"
+            message1 += f"{status} *{name}* {format_float(qty)} л\n"
     
     await update.message.reply_text(message1, parse_mode='Markdown')
     
@@ -1066,29 +1139,74 @@ async def total_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     low_products = get_low_stock_sorted()
     
     if low_products:
-        message2 = " *Будет круто если ты сделаешь это:*\n\n"
+        from datetime import datetime, timedelta
         
-        for i, (name, qty, min_qty, category) in enumerate(low_products, 1):
-            need = max(0, min_qty - qty)
-            percent = (qty / min_qty * 100) if min_qty > 0 else 0
+        # Расчет даты готовности
+        today = datetime.now()
+        ready_date = today + timedelta(days=TINCTURE_DAYS_TO_PREPARE)
+        ready_date_str = ready_date.strftime("%d.%m.%Y")
+        
+        # Сначала обычные заготовки
+        low_preps = [p for p in low_products if p[3] == 'Заготовки']
+        low_tincts = [p for p in low_products if p[3] == 'Настойки']
+        
+        # Если есть заготовки, показываем их
+        if low_preps:
+            preps_message = "Если нечем заняться:\n\n"
+            products_added = False
+            for i, (name, qty, min_qty, category) in enumerate(low_preps, 1):
+                need = max(0, min_qty - qty)
+                if need > 0:
+                    line = f"→ *{name}* → Делай: {format_float(need)} л\n"
+                    products_added = True
+                    if len(preps_message) + len(line) > 4000:
+                        await update.message.reply_text(preps_message, parse_mode='Markdown')
+                        preps_message = "продолжение:\n\n"
+                    preps_message += line
             
-            # Эмодзи для уровня срочности
-            if percent <= 20:
-                urgency = "🔥"
-            elif percent <= 40:
-                urgency = "🔥"
-            elif percent <= 60:
-                urgency = "🔥"
+            # Отправляем заготовки
+            if products_added and preps_message:
+                await update.message.reply_text(preps_message, parse_mode='Markdown')
+                
+        
+        # Теперь настойки с особой логикой
+        if low_tincts:
+            tincture_message = f"НАСТОЙКИ (если ставишь сегодня, то готово будет {ready_date_str}):\n\n"
+            for i, (name, qty, min_qty, category) in enumerate(low_tincts, 1):
+                need = max(0, TINCTURE_MIN_QUANTITY - qty)
+                
+                # Формируем строку для каждого продукта {ready_date_str}
+                product_line = f"→ *{name}* → Пора заряжать или цедить\n"
+                
+                # Проверяем, не превысит ли добавление строки лимит
+                if len(tincture_message) + len(product_line) > 4000:
+                    await update.message.reply_text(tincture_message, parse_mode='Markdown')
+                    tincture_message = "*НАСТОЙКИ (продолжение):*\n\n"
+                
+                tincture_message += product_line
+            
+            # Отправляем настойки с клавиатурой
+            if tincture_message:
+                await update.message.reply_text(
+                    tincture_message, 
+                    parse_mode='Markdown', 
+                    reply_markup=get_main_keyboard()
+                )
+        else:
+            # Если нет настоек, но есть заготовки - отправляем клавиатуру
+            if low_preps:
+                await update.message.reply_text(
+                    "✅ *Готово!*\n",
+                    parse_mode='Markdown',
+                    reply_markup=get_main_keyboard()
+                )
             else:
-                urgency = "⚠️"
-            
-            category_emoji = "🥫" if category == 'Заготовки' else "🍶"
-            message2 += f"*{name}*\n"
-            message2 += f"   Осталось: {qty} л"
-            message2 += f"   → Намутить: {need} л\n\n"
-        
-        
-        await update.message.reply_text(message2, parse_mode='Markdown', reply_markup=get_main_keyboard())
+                await update.message.reply_text(
+                    "✅ *ВСЁ ЗАЕБИСЬ!*\n\n"
+                    "Все минимумы соблюдены, можно расслабиться. 🍻",
+                    parse_mode='Markdown',
+                    reply_markup=get_main_keyboard()
+                )
     else:
         await update.message.reply_text(
             "✅ *ВСЁ ЗАЕБИСЬ!*\n\n"
@@ -1104,12 +1222,30 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     await update.message.reply_text(  # ИСПРАВЛЕНО: добавлена закрывающая скобка
         f"🤘Привет, {user.first_name}, братское сердце!\n"
-        f"Я бро для инвентаризации заготовок и настоек.\n"
-        f"Ну, там русским по кнопкам написано. Куда жмать разберешься думаю, но есть парочка правил: \n"
-        f"1. Пиши в формате: НАЗВАНИЕ КОЛИЧЕСТВО (всё считается в литрах) \n"
-        f"2. В название обязательно включать ключевые ингридиенты и тип напитка. Сироп Улун и Содовая Улун - это разное.\n"
-        f"3. Десятичный дроби, пожалуйста, через точку. Через запятую тоже можно, но это напрягает бот.\n"
-        f"4. Если что 'Помощь' тебе в помощь - или сразу пиши мне @pleasestopitmommy",
+        f"Я бро для инвентаризации заготовок и настоек.\n\n"
+        f"Итак, как это работает: \n\n"
+        f"    У всех пользователей бота один список заготовок. Поэтому очень удобно отслеживать актуальные остатки)) \n"
+        f"    ''Настойки'' и ''заготовки'' -  это разные категории для этого бота.  Настойки - все, что в баночках по две недели на згц стоит. Су-ви заготовки вроде ''Джина на базилике'' не считаются настойкой - такая у них судьба.\n\n"
+        f"Че тыкать-то???\n\n"
+        f"    1. Нажми ''Считаемся, брат'' для добавления заготовок в список или ''Понял вычеркива'' для списания.\n\n"
+        f"    2. Выбери категорию: настойки или заготовки.\n\n"
+        f"    3. **Формат ввода**: Название количество\n\n"
+        f"    Пример твоего сообщения:\n\n"
+        f"        Текила 3\n\n"
+        f"    Можешь отправлять как одиночными сообщениями, так и сразу списком через энтер.\n\n"
+        f"    Пример твоего сообщения:\n\n"
+        f"        Огурец тимьян 4\n"
+        f"        Манго чили 1.2\n"
+        f"        Грушевый шраб 0.3\n"
+        f"        ...\n"
+        f"        Мери Микс 3\n\n"
+        f"    Над написанием вообще не парься, я тебя пойму, а если нет, то пиши сюда - @pleasestopitmommy\n\n"
+        f"    4. Закончил? Тыкай на кнопку в меню и тебя вернет на главную!\n\n"
+        f"    5. Нажми ''В итоге'' чтобы увидеть весь список заготовок и примерный план на заготовочную смену.\n\n"
+        f"    6. Кнопку ''Очистить список'' используй когда полностью пересчитываешь заготовки, потому что список удаляется у всех.\n\n"
+        f"    7. ''Помощь'' - короткая справка про кнопки",
+
+        
         reply_markup=get_main_keyboard()  # ИСПРАВЛЕНО: перенесено внутрь скобок
     )
 
@@ -1260,5 +1396,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"❌ Ошибка: {e}")
         input("Нажмите Enter...")
-
-
