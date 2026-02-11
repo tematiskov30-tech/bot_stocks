@@ -10,7 +10,7 @@ from datetime import datetime
 from collections import defaultdict
 
 # УКАЖИТЕ ВАШ ТОКЕН ЗДЕСЬ!
-TOKEN = "7658577513:AAGkKoXhdfHu6KEICQsCut0Wk-USTRPxC3I"  # ⬅️ ЗАМЕНИТЕ НА СВОЙ!
+TOKEN = "8212022181:AAHIRzJzO_ueE-fsOalmVBKkKNFTjKJWimM"  # ⬅️ ЗАМЕНИТЕ НА СВОЙ!
 # ==================== КОНСТАНТЫ ДЛЯ НАСТОЕК ====================
 TINCTURE_MIN_QUANTITY = 5  # Минимум для настоек
 TINCTURE_DAYS_TO_PREPARE = 14  # Дней на настаивание
